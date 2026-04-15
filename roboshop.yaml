@@ -7,6 +7,7 @@
     sg_id: "sg-080704b1b6c62ec5a"
     env: "dev"
     action: "create"
+    domain_name: tzpcsystems.xyz
     instances:
       - mongodb
       - catalogue
@@ -31,3 +32,32 @@
     - name: Print Instance Output
       ansible.builtin.debug:
         msg: "{{ instances_output }}"
+
+    - name: Add DNS for servers
+      amazon.aws.route53:
+        state: present
+        zone: "{{ domain_name }}"
+        record: "{{ item.item }}-{{ env }}.{{ domain_name }}"
+        type: A
+        ttl: 1
+        overwrite: true
+        value: "{{ item.instances[0].private_ip_address }}"
+        wait: false
+      loop: "{{ instances_output.results }}"
+      when:
+      - action == 'create'
+
+    - name: Add DNS for servers
+      amazon.aws.route53:
+        state: present
+        zone: "{{ domain_name }}"
+        record: "{{ item.item }}-{{ env }}.{{ domain_name }}"
+        type: A
+        ttl: 1
+        overwrite: true
+        value: "{{ item.instances[0].public_ip_address }}"
+        wait: false
+      loop: "{{ instances_output.results }}"
+      when:
+      - item.item == 'frontend'
+      - action == 'create'
