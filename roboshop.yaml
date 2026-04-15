@@ -22,10 +22,10 @@
           Component: "{{ item }}"
           Env: "{{ env }}"
           Name: "{{ item }}-{{ env }}"
-        loop: "{{ instances }}"
-        register: instances_output
-        when:
-        - action == 'create'
+      loop: "{{ instances }}"
+      register: instances_output
+      when:
+      - action == 'create'
         
     - name: Print Instance Output
       ansible.builtin.debug:
