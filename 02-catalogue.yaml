@@ -1,0 +1,56 @@
+- name: Configure Catalogue
+  hosts: catalogue
+  become: yes
+  tasks:
+    - name: Enable Nodejs:20
+      ansible.builtin.command: dnf module enable nodejs:20 -y
+
+    - name: Install Nodejs
+      ansible.builtin.dnf:
+        name: nodejs
+        state: present
+
+    - name: Add user
+      ansible.builtin.user:
+        name: roboshop
+        system: true
+        shell: /sbin/nologin
+        home: /app
+        comment: "Adding roboshop user as a system user"
+
+    - name: Create project folder
+      ansible.builtin.file:
+        path: /app
+        state: directory
+
+    - name: Download project
+      ansible.builtin.get_url:
+        url: https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip 
+        dest: /tmp/catalogue.zip
+
+    - name: Unzip project folder
+      ansible.builtin.unarchive:
+        src: /tmp/catalogue.zip
+        dest: /app
+        remote_src: yes
+
+    - name: Install package.
+      community.general.npm:
+        path: /app
+
+    - name: Copy catalogue.service file
+      ansible.builtin.copy:
+        src: catalogue.service
+        dest: /etc/systemd/system/catalogue.service
+    
+    - name: Copy mongo.repo file
+      ansible.builtin.copy:
+        src: mongo.repo
+        dest: /etc/yum.repos.d/mongo.repo
+
+    - name: Install Mongodb
+      ansible.builtin.dnf:
+        name: mongodb-mongosh
+        state: present
+
+    # continue
