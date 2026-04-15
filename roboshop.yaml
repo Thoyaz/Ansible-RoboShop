@@ -1,0 +1,32 @@
+- name: Create Infra for Roboshop
+  hosts: all
+  connection: local
+  become: yes
+  var:
+    ami_id: "ami-0220d79f3f480ecf5"
+    sg_id: "sg-080704b1b6c62ec5a"
+    env: "dev"
+    action: "create"
+    instances:
+      - mongodb
+      - catalogue
+  tasks:
+    - name: Create Servers
+      amazon.aws.ec2_instance:
+        name: "{{ item }}-{{ env }}"
+        instance_type: t3.micro
+        image_id: "{{ ami_id }}"
+        security_group: "{{ sg_id }}"
+        tags:
+          Product: Roboshop
+          Component: "{{ item }}"
+          Env: "{{ env }}"
+          Name: "{{ item }}-{{ env }}"
+        loop: "{{ instances }}"
+        register: instances_output
+        when:
+        - action == 'create'
+        
+    - name: Print Instance Output
+      ansible.builtin.debug:
+        msg: "{{ instances_output }}"
