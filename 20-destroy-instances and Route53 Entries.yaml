@@ -1,5 +1,5 @@
 - name: Destroy Infra
-  hosts: all
+  hosts: localhost
   become: yes
   tasks:
     - name: Terminate every running instance in a region. Use with EXTREME caution.
@@ -8,3 +8,5 @@
         region: us-east-1
         filters:
           instance-state-name: running
+
+    
