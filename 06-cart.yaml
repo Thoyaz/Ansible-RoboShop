@@ -11,7 +11,7 @@
         state: present
 
     - name: Add cart
-      ansible.builtin.cart:
+      ansible.builtin.user:
         name: roboshop
         system: true
         shell: /sbin/nologin
