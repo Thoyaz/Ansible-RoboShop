@@ -36,9 +36,9 @@
       dest: /usr/share/nginx/html
       remote_src: yes
 
-  - name: Copy nginx.service file
+  - name: Copy nginx.conf file
     ansible.builtin.template:
-      src: nginx.service
+      src: nginx.conf
       dest: /etc/nginx/nginx.conf
 
   - name: start frontend
