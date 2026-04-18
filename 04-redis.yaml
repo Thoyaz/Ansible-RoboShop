@@ -22,4 +22,4 @@
     ansible.builtin.service:
       state: restarted
       name: redis
-      enable: yes
+      enabled: yes
