@@ -1,0 +1,30 @@
+- name: Configure rabbitmq
+  hosts: rabbitmq
+  become: yes
+  tasks:
+    - name: Copy rabbitmq.repo file
+      ansible.builtin.template:
+        src: rabbitmq.repo
+        dest: /etc/yum.repos.d/rabbitmq.repo
+
+    - name: Start service httpd, if not started
+      ansible.builtin.service:
+        name: rabbitmq-server
+        state: started
+
+    - name: start and enable rabbitmq
+      ansible.builtin.service:
+        name: rabbitmq-server
+        state: restarted
+        enabled: yes
+
+    - name: Remove a user using the API
+      community.rabbitmq.rabbitmq_user:
+        user: roboshop
+        password: roboshop123
+        permissions:
+          - vhost: /
+            configure_priv: .*
+            read_priv: .*
+            write_priv: .*
+      state: present

@@ -1,0 +1,91 @@
+- name: Configure shipping
+  hosts: shipping
+  become: yes
+  tasks:
+    - name: Install Maven and MySql
+      ansible.builtin.dnf:
+        name: "{{ item }}"
+        state: present
+      loop:
+      - maven
+      - mysql
+
+    - name: Add shipping
+      ansible.builtin.shipping:
+        name: roboshop
+        system: true
+        shell: /sbin/nologin
+        home: /app
+        comment: "Adding roboshop shipping as a system shipping"
+
+    - name: Delete app directory
+      ansible.builtin.file:
+        path: /app
+        state: absent
+
+    - name: Create project folder
+      ansible.builtin.file:
+        path: /app
+        state: directory
+
+    - name: Delete Zip file if it alredy exists
+      ansible.builtin.file:
+        path: /tmp/shipping.zip
+        state: absent
+
+    - name: Download project
+      ansible.builtin.get_url:
+        url: https://roboshop-artifacts.s3.amazonaws.com/shipping-v3.zip 
+        dest: /tmp/shipping.zip
+
+    - name: Unzip project folder
+      ansible.builtin.unarchive:
+        src: /tmp/shipping.zip
+        dest: /app
+        remote_src: yes
+
+    - name: install dependencies
+      ansible.builtin.command: mvn clean package 
+      args:
+        chdir: /app
+
+    - name: install dependencies
+      ansible.builtin.command: mv target/shipping-1.0.jar shipping.jar
+      args:
+        chdir: /app
+
+    - name: Copy shipping.service file
+      ansible.builtin.template:
+        src: shipping.service
+        dest: /etc/systemd/system/shipping.service
+
+    - name: Deamon Reload
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+
+    - name: install dependencie
+      ansible.builtin.pip:
+        name: "{{ item }}"
+        executable: pip3.9
+      loop:
+      - cryptography
+      - PyMySQL
+
+    - name: import shipping data
+      community.mysql.mysql_db:
+        state: import
+        name: all
+        login_host: "{{ MYSQL_HOST }}"
+        login_user: root
+        login_password: RoboShop@1
+        target: "{{ item }}"
+      loop:
+      - /app/db/schema.sql
+      - /app/db/app-user.sql 
+      - /app/db/master-data.sql
+
+    - name: start and enable shipping
+      ansible.builtin.service:
+        name: shipping
+        state: restarted
+        enabled: yes
