@@ -18,10 +18,20 @@
         home: /app
         comment: "Adding roboshop user as a system user"
 
+    - name: Delete app directory
+      ansible.builtin.file:
+        path: /app
+        state: absent
+
     - name: Create project folder
       ansible.builtin.file:
         path: /app
         state: directory
+
+    - name: Delete Zip file if it alredy exists
+      ansible.builtin.file:
+        path: /tmp/catalogue.zip
+        state: absent
 
     - name: Download project
       ansible.builtin.get_url:
@@ -39,7 +49,7 @@
         path: /app
 
     - name: Copy catalogue.service file
-      ansible.builtin.copy:
+      ansible.builtin.template:
         src: catalogue.service
         dest: /etc/systemd/system/catalogue.service
     
@@ -53,4 +63,20 @@
         name: mongodb-mongosh
         state: present
 
-    # continue
+    - name: Check Products Loading
+      ansible.builtin.command: mongosh --host "{{ MONGODB_HOST }}" --quiet  --eval 'db.getMongo().getDBNames().indexOf("catalogue")'
+      register: catalogue_output
+
+    - name: Print the output
+      ansible.builtin.debug:
+        msg: "{{ catalogue_output }}"
+
+    - name: Load the products
+      ansible.builtin.command: mongosh --host "{{ MONGODB_HOST }}" </app/db/master-data.js
+      when: catalogue_output.stdout | int < 0
+
+    - name: start catalogue
+      ansible.builtin.service:
+        state: restarted
+        name: catalogue
+        enable: yes
