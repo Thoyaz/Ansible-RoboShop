@@ -7,10 +7,10 @@
         src: rabbitmq.repo
         dest: /etc/yum.repos.d/rabbitmq.repo
 
-    - name: Start service httpd, if not started
-      ansible.builtin.service:
+    - name: Install rabbitmq
+      ansible.builtin.package:
         name: rabbitmq-server
-        state: started
+        state: present
 
     - name: start and enable rabbitmq
       ansible.builtin.service:
