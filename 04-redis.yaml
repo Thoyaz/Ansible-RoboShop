@@ -1,0 +1,25 @@
+- name: Redis Configuration
+  hosts: redis
+  become: yes
+  tasks:
+  - name: Remove the Apache package
+    ansible.builtin.dnf:
+      name: redis
+      state: absent
+
+  - name: Install redis 7
+    ansible.builtin.dnf:
+      name: redis == 7
+      state: present
+
+  - name: Modify redis config
+    ansible.builtin.replace:
+      path: /etc/redis/redis.conf
+      regexp: '127.0.0.1'
+      replace: '0.0.0.0' 
+
+  - name: start redis
+    ansible.builtin.service:
+      state: restarted
+      name: redis
+      enable: yes
