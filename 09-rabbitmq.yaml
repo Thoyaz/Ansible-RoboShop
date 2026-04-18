@@ -18,7 +18,7 @@
         state: restarted
         enabled: yes
 
-    - name: Remove a user using the API
+    - name: adding a user using the API
       community.rabbitmq.rabbitmq_user:
         user: roboshop
         password: roboshop123
