@@ -11,7 +11,7 @@
       - mysql
 
     - name: Add shipping
-      ansible.builtin.shipping:
+      ansible.builtin.user:
         name: roboshop
         system: true
         shell: /sbin/nologin
