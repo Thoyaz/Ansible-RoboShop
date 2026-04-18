@@ -7,9 +7,12 @@
       name: redis
       state: absent
 
-  - name: Install redis 7
+  - name: Enable redis version 7
+    ansible.builtin.command: dnf module enable redis:7 -y
+
+  - name: Install redis
     ansible.builtin.dnf:
-      name: redis == 7
+      name: redis
       state: present
 
   - name: Modify redis config
